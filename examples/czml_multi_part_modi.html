@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id="toolbar"></div>
+<script>
+    var initCesium = new InitCesium();
+    var viewer = initCesium.initViewer('cesiumContainer', {
+        shouldAnimate : true
+    });
+
+    var czmlPath = '../data/';
+    var vehicleEntity;
+
+    // Add a blank CzmlDataSource to hold our multi-part entity/entities.
+    var dataSource = new Cesium.CzmlDataSource();
+    viewer.dataSources.add(dataSource);
+
+    // This demo shows how a single path can be broken up into several CZML streams.
+    var partsToLoad = [{
+        url: 'MultipartVehicle_part1.czml',
+        range: [0, 1500],
+        requested: false,
+        loaded: false
+    }, {
+        url: 'MultipartVehicle_part2.czml',
+        range: [1500, 3000],
+        requested: false,
+        loaded: false
+    }, {
+        url: 'MultipartVehicle_part3.czml',
+        range: [3000, 4500],
+        requested: false,
+        loaded: false
+    }];
+
+
+    function processPart(part) {
+
+        dataSource.process(czmlPath + part.url).then(function() {
+
+            // Follow the vehicle with the camera.
+            if (!viewer.trackedEntity) {
+                viewer.trackedEntity = vehicleEntity = dataSource.entities.getById('Vehicle');
+            }
+        });
+    }
+
+    processPart(partsToLoad[0]);
+    var preloadTimeInSeconds = 100;
+
+    viewer.clock.onTick.addEventListener(function(clock) {
+        console.log("事件监听中")
+        // This example uses time offsets from the start to identify which parts need loading.
+        var timeOffset = Cesium.JulianDate.secondsDifference(clock.currentTime, clock.startTime);
+
+        //根据大致的预加载时间和第一段轨迹需要运行的时间，过滤掉已经加载的czml
+        partsToLoad.filter(function(part) {
+            return
+            (timeOffset >= part.range[0] - preloadTimeInSeconds) &&
+                (timeOffset <= part.range[1]);
+        }).forEach(function(part) {
+            processPart(part);
+        });
+
+    });
+
+
+</script>
+</body>
+</html>

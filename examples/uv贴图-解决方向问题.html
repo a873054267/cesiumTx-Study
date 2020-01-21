@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+    <script src="./js/pr.js"></script>
+</head>
+<body>
+<div id="cesiumContainer">
+</div>
+
+<script>
+    var url="http://t0.tianditu.com/img_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=img&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles"+"&tk=ebf64362215c081f8317203220f133eb";
+
+    let viewer = new Cesium.Viewer('cesiumContainer',{
+        imageryProvider:new Cesium.WebMapTileServiceImageryProvider({
+            url:"http://t0.tianditu.com/img_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=img&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles"+"&tk=ebf64362215c081f8317203220f133eb",
+            layer: "tdtBasicLayer",
+            style: "default",
+            format: "image/jpeg",
+            maximumLevel:18, //天地图的最大缩放级别
+            tileMatrixSetID: "GoogleMapsCompatible",
+            show: false
+        }),
+        selectionIndicator : false,
+        infoBox : false,
+        //terrainProvider: Cesium.createWorldTerrain(),
+        shouldAnimate : true,
+        baseLayerPicker:true,
+        // selectedImageryProviderViewModel:cs[7],
+
+    });
+
+
+
+
+    //取消双击事件
+    viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+    //设置homebutton的位置
+    //设置初始位置
+    viewer.camera.setView({
+        destination: Cesium.Cartesian3.fromDegrees(116.25439848178416, 40.076109769664754,34.6608322044944,)
+    });
+
+    var primitiveTexture;
+    function setvisible(value) {
+        switch (value) {
+            case 'add':
+                var cartesiansPoints = [];
+
+                var cartesianTemp0 = Cesium.Cartesian3.fromDegrees( 116.25439848178416, 40.076109769664754,34.6608322044944,);
+                var cartesianTemp1 = Cesium.Cartesian3.fromDegrees(  116.25441859608345, 40.07611581113965,34.66084235993,);
+                var cartesianTemp2 = Cesium.Cartesian3.fromDegrees(116.254391708889,   40.07616869153493,34.6717420443615,);
+                var cartesianTemp3 = Cesium.Cartesian3.fromDegrees( 116.2543715946041,  40.07616265007569,34.6717318889243,);
+
+                cartesiansPoints.push(cartesianTemp0);
+                cartesiansPoints.push(cartesianTemp1);
+                cartesiansPoints.push(cartesianTemp2);
+                cartesiansPoints.push(cartesianTemp3);
+
+                primitiveTexture = new PrimitiveTexture({ 'viewer': viewer, 'Cartesians': cartesiansPoints, 'url': './4.png' });
+
+                break;
+            case 'update':
+                if (primitiveTexture) {
+                    primitiveTexture.updateTexture('sampledata/images/0.png');
+                }
+                break;
+            case 'clear':
+                if (primitiveTexture) {
+                    primitiveTexture.remove();
+                }
+                break;
+        }
+    }
+    setvisible("add")
+
+
+</script>
+</body>
+</html>

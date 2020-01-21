@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+    <script type="text/javascript" src="./jquery-3.3.1.min.js"></script>
+</head>
+<body>
+<div id="cesiumContainer">
+</div>
+<div id="one" class="ysc-dynamic-layer" style="width: 20px;height: 50px">
+    <div class="line" style="width: 50px"></div>
+</div>
+<script>
+    var ys=document.getElementById('kankan')
+    var url="http://t0.tianditu.com/img_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=img&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles"+"&tk=ebf64362215c081f8317203220f133eb";
+
+    let viewer = new Cesium.Viewer('cesiumContainer',{
+        imageryProvider:new Cesium.WebMapTileServiceImageryProvider({
+            url:"http://t0.tianditu.com/img_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=img&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles"+"&tk=ebf64362215c081f8317203220f133eb",
+            layer: "tdtBasicLayer",
+            style: "default",
+            format: "image/jpeg",
+            maximumLevel:18, //天地图的最大缩放级别
+            tileMatrixSetID: "GoogleMapsCompatible",
+            show: false
+        }),
+        selectionIndicator : false,
+        infoBox : false,
+        //terrainProvider: Cesium.createWorldTerrain(),
+        shouldAnimate : true,
+        baseLayerPicker:true,
+        // selectedImageryProviderViewModel:cs[7],
+
+    });
+    /**
+     *两个圆扩散纹理
+     * */
+    function addCircleRipple(viewer,data){
+        var r1=data.minR,r2=data.minR;
+
+        function changeR1() { //这是callback，参数不能内传
+            r1=r1+data.deviationR;
+            if(r1>=data.maxR){
+                r1=data.minR;
+            }
+
+            return r1;
+        }
+        function changeR2() {
+            r2=r2+data.deviationR;
+            if(r2>=data.maxR){
+                r2=data.minR;
+            }
+            return r2;
+        }
+        viewer.entities.add({
+            id:data.id,
+            name:"",
+            position:Cesium.Cartesian3.fromDegrees(data.lon,data.lat,data.height),
+            ellipse : {
+                semiMinorAxis :new Cesium.CallbackProperty(changeR1,false),
+                semiMajorAxis :new Cesium.CallbackProperty(changeR1,false),
+                height:data.height,
+                material:new Cesium.ImageMaterialProperty({
+                    image:data.imageUrl,
+                    repeat:new Cesium.Cartesian2(1.0, 1.0),
+                    transparent:true,
+                    color:new Cesium.CallbackProperty(function () {
+                        var alp=1-r1/data.maxR;
+                        return Cesium.Color.WHITE.withAlpha(alp)  //entity的颜色透明 并不影响材质，并且 entity也会透明哦
+                    },false)
+                })
+            }
+        });
+        setTimeout(function () {
+            viewer.entities.add({
+                name:"",
+                position:Cesium.Cartesian3.fromDegrees(data.lon,data.lat,data.height),
+                ellipse : {
+                    semiMinorAxis :new Cesium.CallbackProperty(changeR2,false),
+                    semiMajorAxis :new Cesium.CallbackProperty(changeR2,false),
+                    height:data.height,
+                    material:new Cesium.ImageMaterialProperty({
+                        image:data.imageUrl,
+                        repeat:new Cesium.Cartesian2(1.0, 1.0),
+                        transparent:true,
+                        color:new Cesium.CallbackProperty(function () {
+                            var alp=1;
+                            alp=1-r2/data.maxR;
+                            return Cesium.Color.WHITE.withAlpha(alp)
+                        },false)
+                    })
+                }
+            });
+        },data.eachInterval)
+    }
+
+    var lon=117.286419;
+    var lat=31.864436;
+    addCircleRipple(viewer,{ //默认只绘制两个圆圈叠加 如遇绘制多个，请自行源码内添加。
+        id:"111",
+        lon:lon,
+        lat:lat,
+        height:500,
+        maxR:3000,
+        minR:0,//最好为0
+        deviationR:10,//差值 差值也大 速度越快
+        eachInterval:2000,//两个圈的时间间隔
+        imageUrl:"./redCircle2.png"
+    });
+
+    //如果添加中心线的话：
+    viewer.entities.add({
+        name:"",
+        polyline: {
+            positions: Cesium.Cartesian3.fromDegreesArrayHeights([
+                lon,lat,0,
+                lon,lat, 5000,]
+            ),
+            width: 4,
+            material : new Cesium.PolylineGlowMaterialProperty({ //发光线
+                glowPower : 0.1,
+                color : Cesium.Color.RED
+            })
+        }
+    });
+    viewer.zoomTo(viewer.entities);
+
+
+
+</script>
+</body>
+
+</html>

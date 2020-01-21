@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer">
+</div>
+<div id="toolbar">
+    <table class="infoPanel">
+        <tbody>
+        <tr>
+            <td>Left click to add a vertex.</td>
+        </tr>
+        <tr>
+            <td>Right click to start new shape.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    var initCesium = new InitCesium();
+    var viewer = initCesium.initViewer('cesiumContainer',  {
+        selectionIndicator : false,
+        infoBox : false,
+        clock:true,
+        timeline:true,
+        shouldAnimate : true
+        //terrainProvider : Cesium.createWorldTerrain()
+    });
+    // 创建盒子
+    var blueBox = viewer.entities.add({
+        name : 'Blue box',
+        position: Cesium.Cartesian3.fromDegrees(-114.0, 40.0, 300000.0),
+        box : {
+            dimensions : new Cesium.Cartesian3(400000.0, 300000.0, 500000.0),
+            material : Cesium.Color.BLUE,
+            outline: true,
+        }
+    });
+   viewer.clock.currentTime = new Cesium.JulianDate.fromIso8601('2019-12-03T18:29:00.00Z');
+    //viewer.trackedEntity(blueBox)
+    var property = new Cesium.SampledProperty(Cesium.Cartesian3);
+
+    property.addSample(Cesium.JulianDate.fromIso8601('2019-12-03T18:29:00.00Z'),
+        new Cesium.Cartesian3(400000.0, 300000.0, 200000.0));
+
+    property.addSample(Cesium.JulianDate.fromIso8601('2019-12-03T18:29:30.00Z'),
+        new Cesium.Cartesian3(400000.0, 300000.0, 700000.0));
+
+    blueBox.box.dimensions = property;
+
+
+
+
+</script>
+</body>
+</html>

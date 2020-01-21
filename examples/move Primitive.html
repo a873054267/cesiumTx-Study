@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer">
+</div>
+
+<script>
+    var initCesium = new InitCesium();
+    console.log(Cesium.Cartesian3.fromDegrees(119, 40.03883))
+    var viewer = initCesium.initViewer('cesiumContainer', {
+
+    });
+
+    let instance = new Cesium.PolylineGeometry({
+        positions : Cesium.Cartesian3.fromDegreesArrayHeights([
+            110.20, 34.55, 0,
+            115.20, 34.55, 0,
+            115.20, 39.55, 0
+        ]),
+        width : 10.0,
+        vertexFormat : Cesium.PolylineMaterialAppearance.VERTEX_FORMAT
+    })
+
+    var pr=new Cesium.Primitive({
+        geometryInstances : new Cesium.GeometryInstance({
+            geometry: instance,
+        }),
+        appearance : new Cesium.PolylineMaterialAppearance({
+            material : Cesium.Material.fromType('Color')
+        })
+    })
+    viewer.scene.primitives.add(pr);
+    viewer.camera.setView({
+        destination: Cesium.Cartesian3.fromDegrees(110.20, 34.55, 3000000)
+    });
+    console.log(pr)
+
+</script>
+</body>
+</html>

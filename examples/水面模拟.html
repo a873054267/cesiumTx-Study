@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer">
+</div>
+
+<script>
+    var initCesium = new InitCesium();
+
+    var viewer = initCesium.initViewer('cesiumContainer', {
+
+    });
+    //河道关键点数组
+    var River1Point =[
+        115.5985634205044,32.43079913513041,
+        116.5985634205044,32.43079913513041,
+        116.5985634205044,33.43079913513041,
+        115.5985634205044,33.43079913513041,
+
+    ];
+    //河道1多边形
+    var polygon1 = new Cesium.PolygonGeometry({
+        polygonHierarchy : new Cesium.PolygonHierarchy(Cesium.Cartesian3.fromDegreesArray(River1Point)),
+        extrudedHeight:0,
+        height:0,
+        vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT
+    });
+    var River1=new Cesium.Primitive({
+        geometryInstances : new Cesium.GeometryInstance({
+            geometry :polygon1
+        }),
+        appearance : new Cesium.EllipsoidSurfaceAppearance({
+            aboveGround : true
+        }),
+        show : true
+    });
+    var  River1_Material =new Cesium.Material({
+        fabric : {
+            type : 'Water',
+            uniforms : {
+                normalMap:'./waterNormals.jpg',
+                frequency: 100.0,
+                animationSpeed: 0.01,
+                amplitude: 10.0
+            }
+        }
+    });
+    var scene = viewer.scene;
+    River1.appearance.material = River1_Material;
+    scene.primitives.add(River1);           //添加到场景
+
+    viewer.camera.setView({
+        destination: Cesium.Cartesian3.fromDegrees(  115.5985634205044,32.43079913513041, 300000)
+    });
+
+
+</script>
+</body>
+</html>

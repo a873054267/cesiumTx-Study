@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<style>
+    #toolbar {
+        background: rgba(42, 42, 42, 0.8);
+        padding: 4px;
+        border-radius: 4px;
+    }
+    #toolbar input {
+        vertical-align: middle;
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+    #toolbar .header {
+        font-weight: bold;
+    }
+</style>
+<body>
+<div id="cesiumContainer">
+</div>
+<div id="toolbar">
+    <table><tbody>
+    <tr><td class="header">Model Color</td></tr>
+    <tr>
+        <td>Mode</td>
+        <td><select data-bind="options: colorBlendModes, value: colorBlendMode"></select></td>
+    </tr>
+    <tr>
+        <td>Color</td>
+        <td><select data-bind="options: colors, value: color"></select></td>
+    </tr>
+    <tr>
+        <td>Alpha</td>
+        <td>
+            <input type="range" min="0.0" max="1.0" step="0.01" data-bind="value: alpha, valueUpdate: 'input'">
+            <input type="text" size="5" data-bind="value: alpha">
+        </td>
+    </tr>
+    <tr>
+        <td data-bind="style: { color: colorBlendAmountEnabled ? '' : 'gray'}">Mix</td>
+        <td>
+            <input type="range" min="0.0" max="1.0" step="0.01" data-bind="value: colorBlendAmount, valueUpdate: 'input', enable: colorBlendAmountEnabled">
+            <input type="text" size="5" data-bind="value: colorBlendAmount, enable: colorBlendAmountEnabled">
+        </td>
+    </tr>
+    <tr><td class="header">Model Silhouette</td></tr>
+    <tr>
+        <td>Color</td>
+        <td><select data-bind="options: silhouetteColors, value: silhouetteColor"></select></td>
+    </tr>
+    <tr>
+        <td>Alpha</td>
+        <td>
+            <input type="range" min="0.0" max="1.0" step="0.01" data-bind="value: silhouetteAlpha, valueUpdate: 'input'">
+            <input type="text" size="5" data-bind="value: silhouetteAlpha">
+        </td>
+    </tr>
+    <tr>
+        <td>Size</td>
+        <td>
+            <input type="range" min="0.0" max="10.0" step="0.01" data-bind="value: silhouetteSize, valueUpdate: 'input'">
+            <input type="text" size="5" data-bind="value: silhouetteSize">
+        </td>
+    </tr>
+    </tbody></table>
+</div>
+
+<script>
+    var initCesium = new InitCesium();
+    var viewer = initCesium.initViewer('cesiumContainer',{
+        infoBox : false,
+        selectionIndicator : false,
+        shadows : true,
+        shouldAnimate : true
+    });
+
+    var entity;
+
+
+
+
+
+    function createModel(url, height) {
+        viewer.entities.removeAll();
+
+        var position = Cesium.Cartesian3.fromDegrees(-123.0744619, 44.0503706, height);
+        var heading = Cesium.Math.toRadians(135);
+        var pitch = 0;
+        var roll = 0;
+        var hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
+        var orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
+        entity = viewer.entities.add({
+            name : url,
+            position : position,
+            orientation : orientation,
+            model : {
+                uri : url,
+                minimumPixelSize : 128,
+                maximumScale : 20000,
+
+            }
+        });
+        viewer.trackedEntity = entity;
+    }
+    createModel('../data/models/CesiumAir/Cesium_Air.glb', 5000.0);
+    var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+    handler.setInputAction(function(movement) {
+        var pick = viewer.scene.pick(movement.position);
+        console.log(pick)
+        console.log(entity.model)
+        //entity.model.color =new Cesium.Color(1.0, 0.0, 0.0, 1);
+
+           pick.primitive.color=new Cesium.Color(1.0, 0.0, 0.0, 1);
+
+    },Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+
+
+
+
+
+</script>
+</body>
+</html>

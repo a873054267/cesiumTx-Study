@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Cesium影像服务--在线服务扩展</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+
+    <link rel="stylesheet" href="./layerPay.css">
+
+
+    <style>
+        html,
+        body,
+        #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+<div id="cesiumContainer" class="fullSize"></div>
+<div class='ysc-dynamic-layer' id='one'>
+    <div class='line'></div>
+    <div class='main'>
+        <div class="charts" id="chart-1"></div>
+    </div>
+</div>
+<div id="creditContainer" style="display: none;"></div>
+<script>
+
+
+
+    //let kankan=document.getElementById('one')
+    let viewer = new Cesium.Viewer('cesiumContainer',{
+        imageryProvider:new Cesium.WebMapTileServiceImageryProvider({
+            url:"http://t0.tianditu.com/img_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=img&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles"+"&tk=ebf64362215c081f8317203220f133eb",
+            layer: "tdtBasicLayer",
+            style: "default",
+            format: "image/jpeg",
+            maximumLevel:18, //天地图的最大缩放级别
+            tileMatrixSetID: "GoogleMapsCompatible",
+            show: false
+        }),
+        selectionIndicator : false,
+        infoBox : false,
+        //terrainProvider: Cesium.createWorldTerrain(),
+        shouldAnimate : true,
+        baseLayerPicker:true,
+        // selectedImageryProviderViewModel:cs[7],
+
+    });
+
+    //取消双击事件
+    viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+    //设置homebutton的位置
+    Cesium.Camera.DEFAULT_VIEW_RECTANGLE =
+        Cesium.Rectangle.fromDegrees(110.15, 34.54, 110.25, 34.56); //Rectangle(west, south, east, north)
+
+    viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(117.21579, 31.80749, 15000.0),
+
+    });
+   ;
+
+
+
+
+
+
+
+
+    var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+    handler.setInputAction(function(e) {
+       var  s1=0.001
+
+        var sStartFlog = false;
+
+        var cartesian = viewer.camera.pickEllipsoid(e.position, viewer.scene.globe.ellipsoid);
+        var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+        var lon = Cesium.Math.toDegrees(cartographic.longitude).toFixed(5); //四舍五入 小数点后保留五位
+        var lat = Cesium.Math.toDegrees(cartographic.latitude).toFixed(5); //四舍五入  小数点后保留五位
+        // var height = Math.ceil(viewer.camera.positionCartographic.height);   //获取相机高度
+
+
+        var data = {
+            layerId: "layer1", //弹窗的唯一id，英文，且唯一,内部entity会用得到
+            lon: lon,
+            lat: lat,
+
+            addEntity: true, //默认为false,如果为false的话就不添加实体，后面的实体属性就不需要了
+            boxHeight: 150, //中间立方体的高度
+            boxHeightDif: 1, //中间立方体的高度增长差值，越大增长越快
+            boxHeightMax: 300, //中间立方体的最大高度
+            boxSide: 40, //立方体的边长
+            boxMaterial: Cesium.Color.DEEPSKYBLUE.withAlpha(0.5),
+            circleSize: 200, //大圆的大小，小圆的大小默认为一半
+        };
+        var height = data.boxHeight,
+            heightMax = data.boxHeightMax,
+            heightDif = data.boxHeightDif;
+
+        var goflog = true;
+        if (cartesian) {
+            viewer.entities.removeById("_1");
+            var blueBox = viewer.entities.add({
+                id:  "_1",
+                name: "立方体盒子",
+                //中心的位置
+                position: new Cesium.CallbackProperty(function() {
+                    height = height + heightDif;
+                    if (height >= heightMax) {
+                        height = heightMax;
+                    }
+                    return Cesium.Cartesian3.fromDegrees(lon, lat, height/2)
+                }, false),
+                box: {
+                    dimensions: new Cesium.CallbackProperty(function() {
+                        height = height + heightDif;
+                        if (height >= heightMax) {
+                            height = heightMax;
+                            if (goflog) { //需要增加判断 不然它会一直执行; 导致对div的dom操作 会一直重复
+                                goflog = false;
+                                console.log("增长完毕")
+                                //添加div
+                                var divPosition = Cesium.Cartesian3.fromDegrees(lon, lat, data.boxHeightMax); //data.boxHeightMax为undef也没事
+                                var kankan=document.getElementById('one')
+                                kankan.style.display='block'
+                                var f=document.getElementsByClassName('line')[0]
+                                f.style.display='block'
+                                f.style.width='50px'
+                                var e=document.getElementsByClassName('main')[0]
+                                e.style.display='block'
+                                console.log(kankan.style)
+                                creatHtmlElement(viewer, kankan, divPosition, [10, -250], true); //当为true的时候，表示当element在地球背面会自动隐藏。默认为false，置为false，不会这样。但至少减轻判断计算压力
+                            }
+                        }
+                        return new Cesium.Cartesian3(data.boxSide, data.boxSide, height)
+                    }, false),
+                    material: data.boxMaterial
+                }
+            });
+
+        }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+    /**
+     * 创建一个 htmlElement元素 并且，其在earth背后会自动隐藏
+     */
+    function creatHtmlElement(viewer, element, position, arr, flog) {
+        var scratch = new Cesium.Cartesian2(); //cesium二维笛卡尔 笛卡尔二维坐标系就是我们熟知的而二维坐标系；三维也如此
+        var scene = viewer.scene,
+            camera = viewer.camera;
+        scene.preRender.addEventListener(function() {
+            var canvasPosition = scene.cartesianToCanvasCoordinates(position, scratch); //cartesianToCanvasCoordinates 笛卡尔坐标（3维度）到画布坐标
+            if (Cesium.defined(canvasPosition)) {
+                element.style.left=canvasPosition.x + arr[0]+"px"
+                element.style.top=canvasPosition.y + arr[1]+"px"
+            }
+            //控制在地球背面时，隐藏div
+            if (flog && flog == true) {
+                var e = position,
+                    i = camera.position,
+                    n = scene.globe.ellipsoid.cartesianToCartographic(i).height;
+                if (!(n += 1 * scene.globe.ellipsoid.maximumRadius, Cesium.Cartesian3.distance(i, e) > n)) {
+                    element.style.display="block"
+                } else {
+                    element.style.display="none"
+                }
+            }
+        });
+        /* 此处进行判断**/ // var px_position = Cesium.SceneTransforms.wgs84ToWindowCoordinates(scene, cartesian);
+
+        /* 此处进行判断**/
+    }
+
+</script>
+</body>
+
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer">
+</div>
+
+<script>
+    var initCesium = new InitCesium();
+
+    var viewer = initCesium.initViewer('cesiumContainer', {
+
+    });
+    //已成功
+    let arr=[
+        116.2534827145815, 40.06905370300764, 34.5099780455691,//经度第四，纬度第二，红色
+        116.2534878530601, 40.0690390732578, 34.510049743487,//经度第三，纬度第四，绿色
+        116.25354930023123,40.06905182483288, 34.49593291009,//经度第一，纬度第三，蓝色
+        116.25354416174872,40.06906645457363, 34.4958612121729,//经度第二，纬度第一，青色
+
+    ]
+
+    let instance = new Cesium.PolygonGeometry({
+        polygonHierarchy : new Cesium.PolygonHierarchy(
+            Cesium.Cartesian3.fromDegreesArrayHeights(arr),
+        ),
+
+    });
+    var image = './4.png';
+    // 定义线型
+    var arrowMaterial = new Cesium.Material.fromType('Image', {
+        image : image,
+        repeat : {
+            x : 1,
+            y : 1
+        }
+    });
+    console.log(Cesium)
+   let pr=new Cesium.Primitive({
+        geometryInstances : new Cesium.GeometryInstance({
+            //geometry:instance,使用instance会使得tube方向不对
+            geometry : Cesium.CoplanarPolygonGeometry.createGeometry(instance)
+        }),
+       appearance : new Cesium.MaterialAppearance({
+           material : arrowMaterial
+       }),
+       asynchronous:false
+
+   })
+    viewer.scene.primitives.add(pr);
+    viewer.camera.setView({
+        destination : Cesium.Cartesian3.fromDegrees(116.2534827145815, 40.06905370300764,50)
+    });
+    console.log(arr)
+    let color=[]
+
+        color.push(
+            new Cesium.Color(255.0, 0.0, 0.0, 1.0)
+        )
+    color.push(
+        new Cesium.Color(0.0, 255.0, 0.0, 1.0)
+    )
+    color.push(
+        new Cesium.Color(0.0, 0.0, 255.0, 1.0)
+    )
+    color.push(
+        new Cesium.Color(0.0, 255.0, 255.0, 1.0)
+    )
+
+
+    addpoint(arr,color)
+
+    function addpoint(arr,color) {
+        for(let i=0;i<arr.length;i+=3){
+
+            let   instance= new Cesium.CircleGeometry({
+                center : Cesium.Cartesian3.fromDegrees(arr[i], arr[i+1]),
+                radius : 1.0
+            })
+            let  pr=new Cesium.Primitive({
+                geometryInstances : new Cesium.GeometryInstance({
+                    geometry : instance
+                }),
+
+                appearance: new Cesium.EllipsoidSurfaceAppearance({
+                    material:Cesium.Material.fromType('Color',{
+                        color: color[i%4]
+                    })
+                })
+            })
+            viewer.scene.primitives.add(pr);
+
+        }
+
+
+    }
+
+
+</script>
+</body>
+</html>

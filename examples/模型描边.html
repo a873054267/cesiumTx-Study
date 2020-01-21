@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer">
+</div>
+
+<script>
+    var initCesium = new InitCesium();
+
+    var viewer = initCesium.initViewer('cesiumContainer', {
+
+    });
+    function addModel(url,height){
+        viewer.entities.removeAll();
+        var position = Cesium.Cartesian3.fromDegrees(-123.0744619, 44.0503706, height);
+        var heading = Cesium.Math.toRadians(135);
+        var pitch = 0;
+        var roll = 0;
+        var hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
+        var orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
+        var entity = viewer.entities.add({
+            name : url,
+            position : position,
+            orientation : orientation,
+            model : {
+                uri : url,
+                minimumPixelSize : 128,
+                maximumScale : 20000
+            },
+            description:"\<div>与infobox关联的提示信息在description属性中设置</div>\<div>可添加html标签，斜杠开头</div>"
+        });
+        viewer.trackedEntity = entity;
+    }
+    let url='../data/models/CesiumMan/Cesium_Man.glb'
+    addModel(url,5000)
+     var collection = viewer.scene.postProcessStages;
+    var silhouette = collection.add(Cesium.PostProcessStageLibrary.createSilhouetteStage());
+    silhouette.enabled = true;
+    silhouette.uniforms.color = Cesium.Color.YELLOW;
+    Cesium.PostProcessStageLibrary.createSilhouetteStage = function() {
+        var silhouetteDepth = new PostProcessStage({
+            name : 'czm_silhouette_depth',
+            fragmentShader : LinearDepth
+        });
+        var edgeDetection = new PostProcessStage({
+            name : 'czm_silhouette_edge_detection',
+            fragmentShader : EdgeDetection,
+            uniforms : {
+                length : 0.25,
+                color : Color.clone(Color.BLACK)
+            }
+        });
+        var silhouetteGenerateProcess = new PostProcessStageComposite({
+            name : 'czm_silhouette_generate',
+            stages : [silhouetteDepth, edgeDetection]
+        });
+        var silhouetteProcess = new PostProcessStage({
+            name : 'czm_silhouette_color_edges',
+            fragmentShader : Silhouette,
+            uniforms : {
+                silhouetteTexture : silhouetteGenerateProcess.name
+            }
+        });
+
+        var uniforms = {};
+        defineProperties(uniforms, {
+            length : {
+                get : function() {
+                    return edgeDetection.uniforms.length;
+                },
+                set : function(value) {
+                    edgeDetection.uniforms.length = value;
+                }
+            },
+            color : {
+                get : function() {
+                    return edgeDetection.uniforms.color;
+                },
+                set : function(value) {
+                    edgeDetection.uniforms.color = value;
+                }
+            }
+        });
+        return new PostProcessStageComposite({
+            name : 'czm_silhouette',
+            stages : [silhouetteGenerateProcess, silhouetteProcess],
+            inputPreviousStageTexture : false,
+            uniforms : uniforms
+        });
+    };
+
+
+</script>
+</body>
+</html>

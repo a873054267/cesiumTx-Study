@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer">
+</div>
+<script>
+    var initCesium = new InitCesium();
+    var viewer = initCesium.initViewer('cesiumContainer',{
+       // terrainProvider: Cesium.createWorldTerrain()
+    });
+    // A simple demo of 3D Tiles feature picking with hover and select behavior
+    // Building data courtesy of NYC OpenData portal: http://www1.nyc.gov/site/doitt/initiatives/3d-building.page
+
+    viewer.scene.globe.depthTestAgainstTerrain = true;
+
+    // Set the initial camera view to look at Manhattan
+    var initialPosition = Cesium.Cartesian3.fromDegrees(  -109.0, 30.0, 753);
+    viewer.scene.camera.setView({
+        destination: initialPosition,
+
+    });
+   var instance = new Cesium.PolygonGeometry({
+        polygonHierarchy : new Cesium.PolygonHierarchy(
+            Cesium.Cartesian3.fromDegreesArray([
+                -109.0, 30.0,30.0,
+                -95.0, 30.0,30.0,
+                -95.0, 40.0,30.0,
+                -109.0, 40.0,30.0
+            ])
+
+        ),
+
+    });
+    pr=new Cesium.Primitive({
+        geometryInstances : new Cesium.GeometryInstance({
+            geometry: instance,
+        }),
+        appearance: new Cesium.EllipsoidSurfaceAppearance({
+            material:Cesium.Material.fromType('Stripe')
+        })
+    })
+
+    viewer.scene.primitives.add(pr);
+
+
+
+</script>
+</body>
+
+</html>

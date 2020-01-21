@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id="toolbar"></div>
+<script>
+    var initCesium = new InitCesium();
+    var viewer = initCesium.initViewer('cesiumContainer',  {
+        infoBox: false,
+        selectionIndicator: false,
+        shadows: true,
+        terrainShadows: Cesium.ShadowMode.ENABLED,
+      //  shouldAnimate: true,
+        terrainProvider: Cesium.createWorldTerrain()
+    });
+    //
+
+    var cesiumAir = viewer.entities.add({
+        name : 'Cesium Air',
+        height : 20.0,
+        model : {
+            uri : '../data/models/CesiumAir/Cesium_Air.glb'
+        }
+    });
+
+
+    var locations = {
+        Exton : {
+            longitude : -1.31968,
+            latitude : 0.698874,
+            height : 74.14210186070714,
+            date : 2457522.154792
+        },
+    };
+
+    var i;
+    var entities = viewer.entities.values;
+    var entitiesLength = entities.length;
+
+    function setLocation(location) {
+        var longitude = location.longitude;
+        var latitude = location.latitude;
+        var height = location.height;
+
+        for (i = 0; i < entitiesLength; ++i) {
+            var entity = entities[i];
+            entity.position = Cesium.Cartesian3.fromRadians(longitude, latitude, height + entity.height);
+        }
+
+        viewer.clock.currentTime = new Cesium.JulianDate(location.date);
+        // viewer.clock.multiplier = 1.0;
+    }
+
+
+
+
+    function setEntity(entity) {
+        for (i = 0; i < entitiesLength; ++i) {
+            entities[i].show = false;
+        }
+        entity.show = true;
+        viewer.trackedEntity = entity;
+    }
+
+
+
+
+
+    setLocation(locations.Exton);
+    setEntity(cesiumAir);
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer">
+</div>
+
+<script>
+    var initCesium = new InitCesium();
+
+    var viewer = initCesium.initViewer('cesiumContainer', {
+
+    });
+    let group=[117,39,118,40]
+    var Line = viewer.entities.add({
+        name : 'aGlowLine',
+        polyline : {
+            positions : Cesium.Cartesian3.fromDegreesArray(group),
+            width : 20,
+            material : new Cesium.PolylineGlowMaterialProperty({
+                glowPower : 0.3,
+                color : Cesium.Color.BLUE.withAlpha(0.7),
+
+            })
+        }
+    });
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer">
+</div>
+<div id="toolbar">
+    <table class="infoPanel">
+        <tbody>
+        <tr>
+            <td>Left click to add a vertex.</td>
+        </tr>
+        <tr>
+            <td>Right click to start new shape.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    var initCesium = new InitCesium();
+    var viewer = initCesium.initViewer('cesiumContainer',  {
+       // selectionIndicator : false,
+       // infoBox : false,
+        terrainProvider : Cesium.createWorldTerrain()
+    });
+    viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+
+    var handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
+
+    function createPoint(worldPosition) {
+        var point = viewer.entities.add({
+            position : worldPosition,
+            point : {
+                color : Cesium.Color.WHITE,
+                pixelSize : 5,
+                heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+            }
+        });
+        return point;
+    }
+    function drawShape(positionData) {
+        var shape;
+        if (drawingMode === 'line') {
+            shape = viewer.entities.add({
+                polyline : {
+                    positions : positionData,
+                    clampToGround : true,
+                    width : 3
+                }
+            });
+        }
+        else if (drawingMode === 'polygon') {
+            shape = viewer.entities.add({
+                polygon: {
+                    hierarchy: positionData,
+                    material: new Cesium.ColorMaterialProperty(Cesium.Color.WHITE.withAlpha(0.7))
+                }
+            });
+        }
+        return shape;
+    }
+    var activeShapePoints = [];
+    var activeShape;
+    var floatingPoint;
+    var drawingMode = 'line';
+    handler.setInputAction(function(event) {
+
+        var earthPosition = viewer.scene.pickPosition(event.position);
+
+        // 判断鼠标位置是否在地球上
+        if (Cesium.defined(earthPosition)) {
+            var ray=viewer.camera.getPickRay(event.position);
+            var cartesian = viewer.scene.globe.pick(ray, viewer.scene);
+            // var cartesian = viewer.camera.pickEllipsoid(event.position, viewer.scene.globe.ellipsoid);
+            activeShapePoints.push(cartesian);
+            createPoint(cartesian);
+            var dynamicPositions = new Cesium.CallbackProperty(function () {
+                return activeShapePoints;
+            }, false);
+            console.log(dynamicPositions)
+
+            activeShape = drawShape(dynamicPositions);
+        }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+    handler.setInputAction(function(event) {
+        //判断基准点是否存在，即是否还在绘制模式下，如果是，
+        if (Cesium.defined(floatingPoint)) {
+            var ray=viewer.camera.getPickRay(event.position);
+            var newPosition = viewer.scene.globe.pick(ray, viewer.scene);
+            //var newPosition = viewer.scene.pickPosition(event.endPosition);
+            if (Cesium.defined(newPosition)) {
+                //每次移动的时候，将移动点的位置设置
+                floatingPoint.position.setValue(newPosition);
+                //移出上一个基准点，
+                activeShapePoints.pop();
+                //将新的基准点压入
+                activeShapePoints.push(newPosition);
+            }
+        }
+
+    }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+
+
+
+</script>
+</body>
+</html>

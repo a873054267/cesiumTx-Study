@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer">
+</div>
+
+
+<script>
+    var viewer = new Cesium.Viewer('cesiumContainer',  {
+        selectionIndicator : false,
+        infoBox : false,
+        shouldAnimate:true
+        // terrainProvider : Cesium.createWorldTerrain()
+    });
+
+    var scene = viewer.scene;
+
+
+    var localFrames = [
+        {
+            pos : Cesium.Cartesian3.fromDegrees(-123.075, 44.045000, 5000.0),
+            converter : Cesium.Transforms.eastNorthUpToFixedFrame,
+            comments : 'Classical East North Up\nlocal Frame'
+        },
+        {
+            pos : Cesium.Cartesian3.fromDegrees(-123.075, 44.050000, 5500.0),
+            converter : Cesium.Transforms.localFrameToFixedFrameGenerator('north', 'west'),
+            comments : 'North West Up\nlocal Frame'
+        },
+        {
+            pos : Cesium.Cartesian3.fromDegrees(-123.075, 44.040000, 4500.0),
+            converter : Cesium.Transforms.localFrameToFixedFrameGenerator('south', 'up'),
+            comments : 'South Up West\nlocal Frame'
+        },
+        {
+            pos : Cesium.Cartesian3.fromDegrees(-123.075, 44.050000, 4500.0),
+            converter : Cesium.Transforms.localFrameToFixedFrameGenerator('up', 'east'),
+            comments : 'Up East North\nlocal Frame'
+        },
+        {
+            pos : Cesium.Cartesian3.fromDegrees(-123.075, 44.040000, 5500.0),
+            converter : Cesium.Transforms.localFrameToFixedFrameGenerator('down', 'east'),
+            comments : 'Down East South\nlocal Frame'
+        }
+    ];
+
+    var hprRollZero = new Cesium.HeadingPitchRoll();
+
+    for (var i = 0; i < localFrames.length; i++) {
+        var position = localFrames[i].pos;
+        var converter = localFrames[i].converter;
+
+        var modelMatrix = Cesium.Transforms.headingPitchRollToFixedFrame(position, hprRollZero, Cesium.Ellipsoid.WGS84, converter);
+       //绘制由变换为世界坐标的矩阵定义的参考系的坐标轴，
+        // 即，地球的WGS84坐标。最突出的例子是原语模型矩阵。
+       // X轴是红色的;Y是绿色的;Z是蓝色的。
+        scene.primitives.add(new Cesium.DebugModelMatrixPrimitive({
+            modelMatrix : modelMatrix,
+            length : 300.0,
+            width : 10.0
+        }));
+
+    }
+    viewer.camera.setView({
+        destination :Cesium.Cartesian3.fromDegrees(-123.075, 44.045000, 5000.0)
+    });
+    viewer.camera.setView({
+        destination :Cesium.Cartesian3.fromDegrees(-123.075, 44.045000, 7000.0)
+    });
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>

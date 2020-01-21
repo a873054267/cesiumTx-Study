@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<style>
+    #toolbar {
+        background: rgba(42, 42, 42, 0.8);
+        padding: 4px;
+        border-radius: 4px;
+    }
+    #toolbar input {
+        vertical-align: middle;
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+</style>
+<body>
+<div id="cesiumContainer">
+</div>
+
+<script>
+    var initCesium = new InitCesium();
+    var viewer = initCesium.initViewer('cesiumContainer', {
+        skyAtmosphere: false,
+        shouldAnimate : true,
+        terrainProvider: Cesium.createWorldTerrain()
+    });
+    // Use clipping planes to selectively hide parts of the globe surface.
+
+    var globe = viewer.scene.globe;
+
+    var exampleTypes = ['Cesium Man', 'St. Helens', 'Grand Canyon Isolated'];
+
+
+    // For tracking state when switching exampleTypes
+    var clippingPlanesEnabled = true;
+    var edgeStylingEnabled = true;
+
+
+
+        var position = Cesium.Cartesian3.fromRadians(-2.0862979473351286, 0.6586620013036164, 1400.0);
+
+        var entity = viewer.entities.add({
+            position : position,
+            box : {
+                dimensions : new Cesium.Cartesian3(1400.0, 1400.0, 2800.0),
+                material : Cesium.Color.WHITE.withAlpha(0.3),
+                outline : true,
+                outlineColor : Cesium.Color.WHITE
+            }
+        });
+        viewer.entities.add({
+            position : position,
+            model : {
+                uri : '../data/models/CesiumMan/Cesium_Man.glb',
+                minimumPixelSize : 128,
+                maximumScale : 800
+            }
+        });
+
+        globe.depthTestAgainstTerrain = true;
+        globe.clippingPlanes = new Cesium.ClippingPlaneCollection({
+            modelMatrix : entity.computeModelMatrix(Cesium.JulianDate.now()),
+            planes : [
+                new Cesium.ClippingPlane(new Cesium.Cartesian3( 1.0,  0.0, 0.0), -700.0),
+                new Cesium.ClippingPlane(new Cesium.Cartesian3(-1.0,  0.0, 0.0), -700.0),
+                new Cesium.ClippingPlane(new Cesium.Cartesian3( 0.0,  1.0, 0.0), -700.0),
+                new Cesium.ClippingPlane(new Cesium.Cartesian3( 0.0, -1.0, 0.0), -700.0)
+            ],
+            edgeWidth: edgeStylingEnabled ? 1.0 : 0.0,
+            edgeColor: Cesium.Color.WHITE,
+            enabled : clippingPlanesEnabled
+        });
+        viewer.trackedEntity = entity;
+
+
+
+
+</script>
+</body>
+</html>

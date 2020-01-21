@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>动态移动 </title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+
+    <script >
+
+        var MoveEntity = (
+            function () {
+                var leftDownFlag = false;
+                var pointDraged = null;
+                var viewer;
+                var handler;
+                function ConstructMoveEntity(options) {
+                    viewer = options.viewer;
+                    handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+                    Init();
+                }
+                function Init() {
+                    // Select plane when mouse down
+                    handler.setInputAction(function (movement) {
+                        //当前选中的entity
+                        pointDraged = viewer.scene.pick(movement.position);//选取当前的entity
+                        leftDownFlag = true;
+                        if (pointDraged) {
+                            //如果选中的实体，就禁止球体滚动
+                            viewer.scene.screenSpaceCameraController.enableRotate = false;//锁定相机
+                        }
+                        else{
+                            viewer.scene.screenSpaceCameraController.enableRotate = true;//释放相机
+
+                        }
+                    }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+
+                    // 鼠标弹起时的操作
+                    handler.setInputAction(function () {
+                        leftDownFlag = false;
+                        pointDraged = null;
+                        viewer.scene.screenSpaceCameraController.enableInputs = true;
+                    }, Cesium.ScreenSpaceEventType.LEFT_UP);
+                    // 鼠标移动的过程中，不断刷新实体的位置
+                    handler.setInputAction(function (movement) {
+                        if (leftDownFlag === true && pointDraged != null) {
+                            let ray = viewer.camera.getPickRay(movement.endPosition);
+                            let cartesian = viewer.scene.globe.pick(ray, viewer.scene);
+                            console.log(cartesian);
+                            pointDraged.id.position = new Cesium.CallbackProperty(function () {
+                                return cartesian;
+                            }, false);//防止闪烁，在移动的过程
+                        }
+                    }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+                }
+                return ConstructMoveEntity;
+            })();
+
+    </script>
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer" class="fullSize"></div>
+<script>
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5MTIzNzY5OC1hOWM2LTRiMWMtYTc5YS1lNjFmZmJhNDcxZjEiLCJpZCI6MTEzNjIsInNjb3BlcyI6WyJhc2wiLCJhc3IiLCJhc3ciLCJnYyJdLCJpYXQiOjE1NjAxMzMzOTZ9.u3sp8GEkT7NjKeexeoUzMjgND6FHk0iGhdV-YxrJw-o';
+    var viewer = new Cesium.Viewer('cesiumContainer');
+    var cartesian = null;
+    var blueBox = viewer.entities.add({
+        name: 'Blue box',
+        position: Cesium.Cartesian3.fromDegrees(-114.0, 40.0, 300000.0),
+        box: {
+            dimensions: new Cesium.Cartesian3(400000.0, 300000.0, 500000.0),
+            material: Cesium.Color.BLUE
+        }
+    });
+    var redBox = viewer.entities.add({
+        name: 'Red box with black outline',
+        position: Cesium.Cartesian3.fromDegrees(-107.0, 40.0, 300000.0),
+        box: {
+            dimensions: new Cesium.Cartesian3(400000.0, 300000.0, 500000.0),
+            material: Cesium.Color.RED.withAlpha(0.5),
+            outline: true,
+            outlineColor: Cesium.Color.BLACK
+        }
+    });
+    var outlineOnly = viewer.entities.add({
+        name: 'Yellow box outline',
+        position: Cesium.Cartesian3.fromDegrees(-100.0, 40.0, 300000.0),
+        box: {
+            dimensions: new Cesium.Cartesian3(400000.0, 300000.0, 500000.0),
+            fill: false,
+            outline: true,
+            outlineColor: Cesium.Color.YELLOW
+        }
+    });
+    viewer.zoomTo(viewer.entities);
+    var moveTool= MoveEntity({ 'viewer': viewer});
+</script>
+</body>
+</html>

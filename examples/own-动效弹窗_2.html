@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Cesium影像服务--在线服务扩展</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+
+    <!-- <script src="./ysc/ysc.js"></script> -->
+    <!-- <script src="./ysc/index.js"></script> -->
+    <style>
+        html,
+        body,
+        #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+<div id="cesiumContainer" class="fullSize"></div>
+<div class='ysc-dynamic-layer' id='one'>
+    <div class='line'></div>
+    <div class='main'>
+        <div class="charts" id="chart-1"></div>
+    </div>
+</div>
+<div id="creditContainer" style="display: none;"></div>
+<script>
+
+
+
+    let kankan=document.getElementById('one')
+    let viewer = new Cesium.Viewer('cesiumContainer',{
+        imageryProvider:new Cesium.WebMapTileServiceImageryProvider({
+            url:"http://t0.tianditu.com/img_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=img&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles"+"&tk=ebf64362215c081f8317203220f133eb",
+            layer: "tdtBasicLayer",
+            style: "default",
+            format: "image/jpeg",
+            maximumLevel:18, //天地图的最大缩放级别
+            tileMatrixSetID: "GoogleMapsCompatible",
+            show: false
+        }),
+        selectionIndicator : false,
+        infoBox : false,
+        //terrainProvider: Cesium.createWorldTerrain(),
+        shouldAnimate : true,
+        baseLayerPicker:true,
+        // selectedImageryProviderViewModel:cs[7],
+
+    });
+
+    //取消双击事件
+    viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+    //设置homebutton的位置
+    Cesium.Camera.DEFAULT_VIEW_RECTANGLE =
+        Cesium.Rectangle.fromDegrees(110.15, 34.54, 110.25, 34.56); //Rectangle(west, south, east, north)
+
+    viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(117.21579, 31.80749, 15000.0),
+
+    });
+   ;
+
+
+
+
+
+
+
+
+    var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+    handler.setInputAction(function(e) {
+       var  s1=0.001
+
+        var sStartFlog = false;
+
+        var cartesian = viewer.camera.pickEllipsoid(e.position, viewer.scene.globe.ellipsoid);
+        var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+        var lon = Cesium.Math.toDegrees(cartographic.longitude).toFixed(5); //四舍五入 小数点后保留五位
+        var lat = Cesium.Math.toDegrees(cartographic.latitude).toFixed(5); //四舍五入  小数点后保留五位
+        // var height = Math.ceil(viewer.camera.positionCartographic.height);   //获取相机高度
+
+
+        var data = {
+            layerId: "layer1", //弹窗的唯一id，英文，且唯一,内部entity会用得到
+            lon: lon,
+            lat: lat,
+            addEntity: true, //默认为false,如果为false的话就不添加实体，后面的实体属性就不需要了
+            boxHeight: 150, //中间立方体的高度
+            boxHeightDif: 1, //中间立方体的高度增长差值，越大增长越快
+            boxHeightMax: 300, //中间立方体的最大高度
+            boxSide: 40, //立方体的边长
+            boxMaterial: Cesium.Color.DEEPSKYBLUE.withAlpha(0.5),
+            circleSize: 200, //大圆的大小，小圆的大小默认为一半
+        };
+        var height = data.boxHeight,
+            heightMax = data.boxHeightMax,
+            heightDif = data.boxHeightDif;
+        var goflog = true;
+        if (cartesian) {
+            viewer.entities.removeById("_1");
+            var blueBox = viewer.entities.add({
+                id:  "_1",
+                name: "立方体盒子",
+                //中心的位置
+                position: new Cesium.CallbackProperty(function() {
+                    height = height + heightDif;
+                    if (height >= heightMax) {
+                        height = heightMax;
+                    }
+                    return Cesium.Cartesian3.fromDegrees(lon, lat, height/2)
+                }, false),
+                box: {
+                    dimensions: new Cesium.CallbackProperty(function() {
+                        height = height + heightDif;
+                        if (height >= heightMax) {
+                            height = heightMax;
+                            if (goflog) { //需要增加判断 不然它会一直执行; 导致对div的dom操作 会一直重复
+                                goflog = false;
+                            }
+                        }
+                        return new Cesium.Cartesian3(data.boxSide, data.boxSide, height)
+                    }, false),
+                    material: data.boxMaterial
+                }
+            });
+
+        }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+
+
+</script>
+</body>
+
+</html>

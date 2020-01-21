@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer">
+</div>
+<script>
+    //Cesium.Ion.defaultAccessToken='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0Zjc1MjIzZi0wMWJhLTRmMDMtYTk4YS1mYTkzMzdkNzMyNDUiLCJpZCI6NDM5NCwic2NvcGVzIjpbImFzciIsImdjIl0sImlhdCI6MTU2NDk4NTk4MH0.-nPn7Oi0pfFW1zu9F--Qm0ImjsZkAK69o6p95JqyqFU';
+
+    Cesium.Ion.defaultAccessToken='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3ZjA2ZDQ2ZS02NTA4LTQ2NTItODE1My1kZjE3MjBkMjFkNzAiLCJpZCI6NDM5NCwic2NvcGVzIjpbImFzciIsImdjIl0sImlhdCI6MTU0MDcyNzI4Nn0.L7P8pJponZfYjdsGnEw2hIHd2AN0h-SuYl6XvzOwLeA';
+
+    let viewer = new Cesium.Viewer('cesiumContainer',{
+        imageryProvider:new Cesium.ArcGisMapServerImageryProvider({
+            url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
+            enablePickFeatures: false
+        }),
+
+    });
+
+    viewer.scene.globe.depthTestAgainstTerrain = true;
+
+    // Set the initial camera view to look at Manhattan
+    var initialPosition = Cesium.Cartesian3.fromDegrees(-74.01881302800248, 40.69114333714821, 753);
+    var initialOrientation = new Cesium.HeadingPitchRoll.fromDegrees(21.27879878293835, -21.34390550872461, 0.0716951918898415);
+    viewer.scene.camera.setView({
+        destination: initialPosition,
+        orientation: initialOrientation,
+    });
+
+    // Load the NYC buildings tileset
+    var tileset = new Cesium.Cesium3DTileset({ url: Cesium.IonResource.fromAssetId(5741) });
+    viewer.scene.primitives.add(tileset);
+
+</script>
+</body>
+
+</html>

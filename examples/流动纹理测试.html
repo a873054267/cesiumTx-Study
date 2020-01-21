@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer">
+</div>
+
+<script>
+    var initCesium = new InitCesium();
+
+    var viewer = initCesium.initViewer('cesiumContainer', {
+
+    });
+    function doTest (points) {
+
+        let curLinePointsArr = generateCurve(points);
+
+        viewer.entities.add({ // 背景线
+
+            description: 'background-line',
+
+            name: '测试流向',
+
+            polyline: {
+
+                width: 3,
+
+                followSurface: true,
+
+                positions: curLinePointsArr,
+
+                /* material: new Cesium.PolylineGlowMaterialProperty({
+
+                                 color: new Cesium.Color(255 / 255, 249 / 255, 0, 0.5)
+
+                             })*/
+
+                material: new Cesium.PolylineDashMaterialProperty({
+
+                    color: new Cesium.Color(255 / 255, 249 / 255, 0, 0.5)
+
+                })
+
+            }
+
+        });
+
+        // 尾迹线
+
+        viewer.entities.add({
+
+            description: 'trail-line',
+
+            name: 'test',
+
+            polyline: {
+
+                width: 5,
+
+                positions: curLinePointsArr,
+
+                material: new Cesium.PolylineTrailMaterialProperty({ // 尾迹线材质
+
+                    color: Cesium.Color.fromCssColorString("rgba(118, 233, 241, 1.0)"),
+
+                    trailLength : 0.2,
+
+                    period : 5.0
+
+                })
+
+            }
+
+        });
+
+        points.forEach(function(point){
+
+            var cartesian = Cesium.Cartesian3.fromDegrees(point.x,point.y,point.z);
+
+            viewer.entities.add({
+
+                position: cartesian,
+
+                point: {
+
+                    color: Cesium.Color.Blue,
+
+                    pixelSize: 20,
+
+                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+
+                }
+
+            });
+
+            /*  viewer.entities.add({
+
+                           position: cartesian,
+
+                           label: {
+
+                               showBackground: false,
+
+                               style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+
+                               fillColor: Cesium.Color.Blue,
+
+                               text: "杆塔模型",
+
+                               font: "8px sans-serif"
+
+                           }
+
+                       });*/
+
+        });
+
+    }
+
+    //生成样条曲线，返回坐标数组
+
+    function generateCurve (points) {
+
+        var cartesian3s = [];
+
+        var times = [];
+
+        var time=0;
+
+        points.forEach(function(point){
+
+            cartesian3s.push(Cesium.Cartesian3.fromDegrees(point.x, point.y, point.z));
+
+            times.push(time);
+
+            time+=0.1;
+
+        });
+
+        /*var arr=[];
+
+                for(var i=0;i<cartesian3s.length-1;i++){
+
+                    arr.push(cartesian3s[i]);
+
+                    var n =parseInt(Cesium.Cartesian3.distance(cartesian3s[i],cartesian3s[i+1]));
+
+                    var a = new Cesium.Cartesian3();
+
+                    for(var j=0;j<n;j++){
+
+                        Cesium.Cartesian3.lerp(cartesian3s[i],cartesian3s[i+1],1,a);
+
+                        arr.push(a);
+
+                    }
+
+                }
+
+                arr.push(cartesian3s[cartesian3s.length-1]);
+
+                arr.forEach(function(o){
+
+                    times.push(time);
+
+                    time+=0.5;
+
+                });*/
+
+        let spline = new Cesium.CatmullRomSpline({
+
+            times: times,
+
+            points: cartesian3s
+
+        });
+
+        let curvePointsArr = [];
+
+        for(let i = 0, len = times.length; i < len; i++){
+
+            curvePointsArr.push(spline.evaluate(times[i]));
+
+        }
+
+        return curvePointsArr;
+
+    }
+
+    let points=[{
+        x:117,
+        y:39,
+        z:40
+    }]
+    doTest(points)
+
+
+</script>
+</body>
+</html>

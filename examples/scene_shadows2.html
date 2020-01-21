@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id="toolbar"></div>
+<script>
+    var initCesium = new InitCesium();
+    var viewer = initCesium.initViewer('cesiumContainer',  {
+        infoBox: false,
+        selectionIndicator: false,
+        shadows: true,
+        terrainProvider: Cesium.createWorldTerrain()
+    });
+    //
+    //     var shadowMap = viewer.shadowMap;
+    //     shadowMap.maxmimumDistance = 10000.0;
+
+    var cesiumAir = viewer.entities.add({
+        name : 'Cesium Air',
+        height : 20.0,
+        position:Cesium.Cartesian3.fromRadians(-1.31968, 0.698874, 120),
+        model : {
+            uri : '../data/models/CesiumAir/Cesium_Air.glb'
+        }
+    });
+    // viewer.scene.globe.enableLighting = true;
+    viewer.trackedEntity = cesiumAir;
+    var shadowMap = viewer.shadowMap;
+    shadowMap.maxmimumDistance = 10000.0;
+
+    viewer.clock.currentTime = new Cesium.JulianDate(2457522.154792);
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="./layerPay.css">
+
+</head>
+<body>
+<div class='ysc-dynamic-layer' id='one'>
+    <div class='line'></div>
+    <div class='main'>
+    </div>
+</div>
+</body>
+<script>
+
+
+    document.body.addEventListener('click',() => {
+        console.log("111111")
+        var kankan=document.getElementById('one')
+        kankan.style.display='block'
+        var f=document.getElementsByClassName('line')[0]
+        f.style.display='block'
+        f.style.width='50px'
+        var e=document.getElementsByClassName('main')[0]
+        e.style.display='block'
+    })
+
+
+
+
+</script>
+</html>

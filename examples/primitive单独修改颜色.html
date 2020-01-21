@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/ctx.js"></script>
+</head>
+<body>
+<div id="cesiumContainer">
+</div>
+
+<script>
+    var initCesium = new InitCesium();
+
+    var viewer = initCesium.initViewer('cesiumContainer', {
+
+    });
+    var instances = [];
+    for(var lon = -180.0; lon < 180.0; lon += 5.0) {
+        for(var lat = -90.0; lat < 90.0; lat += 5.0) {
+            instances.push(new Cesium.GeometryInstance({
+                geometry:new Cesium.RectangleGeometry({
+                    rectangle:Cesium.Rectangle.fromDegrees(lon, lat, lon + 5.0, lat +5.0)
+                }),
+                id:lon+"-"+lat,
+                attributes:{
+                    color:Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.fromRandom({
+                        alpha:0.5
+                    }))
+                }
+            }));
+        }
+    }
+    viewer.scene.primitives.add(new Cesium.Primitive({
+        geometryInstances:instances, //合并
+        releaseGeometryInstances:false,
+        //某些外观允许每个几何图形实例分别指定某个属性，例如：
+        appearance:new Cesium.PerInstanceColorAppearance()
+    }));
+    viewer.camera.setView({
+        destination : Cesium.Cartesian3.fromDegrees(105.20, 30.55,5000000)
+    });
+    var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+    handler.setInputAction(function(movement) {
+        var pick = viewer.scene.pick(movement.position);
+        console.log(pick)
+        var attributes = pick.primitive.getGeometryInstanceAttributes( pick.id );//获取某个实例的属性集
+        attributes.color = Cesium.ColorGeometryInstanceAttribute.toValue( Cesium.Color.fromRandom( {
+            alpha : 1.0
+        } ) )
+
+
+    },Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+
+</script>
+</body>
+</html>
